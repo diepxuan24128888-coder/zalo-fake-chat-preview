@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tin Nhắn Zalo - Troll</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f3f5f8;
+      color: #1f2937;
+      padding: 24px;
+    }
+
+    .workspace {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(420px, 500px);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    }
+
+    .editor-panel {
+      display: grid;
+      gap: 18px;
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .editor-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px 14px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 13px;
+      color: #4b5563;
+    }
+
+    input, select, textarea, button {
+      font: inherit;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      background: #fff;
+    }
+
+    textarea {
+      min-height: 64px;
+      resize: vertical;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 12px 18px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+
+    .btn.primary {
+      background: linear-gradient(135deg, #0ea5e9, #2563eb);
+      color: #fff;
+    }
+
+    .btn.secondary {
+      background: #eef6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+    }
+
+    .preview-column {
+      min-width: 0;
+    }
+
+    .phone {
+      background: #fff;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+      border: 1px solid #e5e7eb;
+    }
+
+    .status-bar {
+      height: 28px;
+      background: #0f172a;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .status-left,
+    .status-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .signal-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 12px;
+    }
+
+    .signal-bars span {
+      width: 3px;
+      border-radius: 2px 2px 0 0;
+      background: rgba(255,255,255,.9);
+      display: block;
+    }
+
+    .signal-bars span:nth-child(1) { height: 4px; }
+    .signal-bars span:nth-child(2) { height: 7px; }
+    .signal-bars span:nth-child(3) { height: 9px; }
+    .signal-bars span:nth-child(4) { height: 11px; }
+    .signal-bars span:nth-child(5) { height: 12px; opacity: .4; }
+
+    .battery-wrap {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .battery {
+      width: 22px;
+      height: 11px;
+      border: 1.5px solid rgba(255,255,255,.9);
+      border-radius: 2px;
+      position: relative;
+      display: inline-block;
+    }
+
+    .battery::before {
+      content: "";
+      position: absolute;
+      right: -4px;
+      top: 2px;
+      width: 2px;
+      height: 5px;
+      background: rgba(255,255,255,.9);
+      border-radius: 1px;
+    }
+
+    .battery::after {
+      content: "";
+      position: absolute;
+      inset: 1px;
+      background: linear-gradient(90deg, #fff 0 72%, rgba(255,255,255,.25) 72% 100%);
+      border-radius: 1px;
+    }
+
+    .chat-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #0ea5e9, #2563eb);
+      color: #fff;
+      padding: 12px 14px;
+    }
+
+    .back { font-size: 20px; opacity: .9; }
+
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 2px solid rgba(255,255,255,.8);
+      flex-shrink: 0;
+      background: #ddd;
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .header-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .header-name {
+      font-weight: 700;
+      font-size: 17px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .header-status {
+      font-size: 11px;
+      opacity: .9;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .mini-btn {
+      width: 28px;
+      height: 28px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255,255,255,.18);
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .chat-body {
+      padding: 16px 12px 12px;
+      background: #fafafa;
+      min-height: 430px;
+    }
+
+    .message-row {
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message-row.me {
+      align-items: flex-end;
+    }
+
+    .message-row.them {
+      align-items: flex-start;
+    }
+
+    .bubble {
+      max-width: 76%;
+      padding: 10px 14px;
+      border-radius: 18px;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .message-row.them .bubble {
+      background: #e5e7eb;
+      color: #111827;
+      border-bottom-left-radius: 6px;
+    }
+
+    .message-row.me .bubble {
+      background: linear-gradient(135deg, #2cb1ff, #2563eb);
+      color: #fff;
+      border-bottom-right-radius: 6px;
+    }
+
+    .time {
+      margin-top: 5px;
+      font-size: 10px;
+      color: #6b7280;
+    }
+
+    .message-row.me .time {
+      margin-right: 8px;
+    }
+
+    .message-row.them .time {
+      margin-left: 8px;
+    }
+
+    .composer {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px 12px;
+      background: #fff;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #dbe2ea;
+      background: #f5f9ff;
+      border-radius: 10px;
+      color: #2563eb;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .composer input {
+      flex: 1;
+      min-width: 0;
+      border-radius: 20px;
+      padding: 10px 14px;
+      border: 1px solid #dbe2ea;
+      background: #f8fafc;
+    }
+
+    .send-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #2cb1ff, #2563eb);
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    @media (max-width: 920px) {
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="workspace">
+    <div class="panel editor-panel">
+      <h3>Chỉnh sửa tin nhắn</h3>
+
+      <div class="editor-grid">
+        <div class="field">
+          <label>Ảnh đại diện</label>
+          <input id="avatarUrl" type="text" value="https://i.imgur.com/6RpQ9QH.jpg" />
+        </div>
+        <div class="field">
+          <label>Tên người gửi</label>
+          <input id="senderName" type="text" value="Nguyễn Nhật Ánh" />
+        </div>
+        <div class="field">
+          <label>Nhà mạng</label>
+          <input id="networkName" type="text" value="Viettel" />
+        </div>
+        <div class="field">
+          <label>Loại mạng</label>
+          <input id="networkType" type="text" value="4G" />
+        </div>
+        <div class="field">
+          <label>Mức pin (%)</label>
+          <input id="batteryLevel" type="number" value="49" min="0" max="100" />
+        </div>
+        <div class="field">
+          <label>Giao diện</label>
+          <select id="themeMode">
+            <option value="android" selected>Android</option>
+            <option value="ios">iOS</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Giờ trên màn hình</label>
+          <input id="screenTime" type="text" value="06:59" />
+        </div>
+        <div class="field">
+          <label>Giờ nhận tin 1</label>
+          <input id="time1" type="text" value="13:40" />
+        </div>
+        <div class="field">
+          <label>Giờ nhận tin 2</label>
+          <input id="time2" type="text" value="13:41" />
+        </div>
+        <div class="field">
+          <label>Giờ gửi tin</label>
+          <input id="time3" type="text" value="13:42" />
+        </div>
+        <div class="field">
+          <label>Giờ nhận tin 3</label>
+          <input id="time4" type="text" value="13:42" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Tin nhắn của tôi</label>
+        <textarea id="myMessage" placeholder="Nhập tin nhắn của bạn...">Ối! Thật hả anh 😲 Em mơ cũng không dám nghĩ đến việc này!</textarea>
+      </div>
+
+      <div class="field">
+        <label>Tin nhắn đối phương</label>
+        <textarea id="theirMessage" placeholder="Nhập tin nhắn đối phương...">Chào bạn nha 😄</textarea>
+      </div>
+
+      <div class="actions">
+        <button class="btn secondary" id="saveTemplate">Lưu mẫu</button>
+        <button class="btn primary" id="runPreview">Chạy</button>
+      </div>
+    </div>
+
+    <div class="preview-column">
+      <div class="phone" id="phonePreview">
+        <div class="status-bar" id="statusBar">
+          <div class="status-left">
+            <span id="carrier">Viettel</span>
+            <div class="signal-bars" aria-label="signal strength">
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <span id="networkTypeLabel">4G</span>
+          </div>
+          <div class="status-center" id="screenClock">06:59</div>
+          <div class="status-right">
+            <div class="battery-wrap">
+              <span class="battery" aria-label="battery"></span>
+              <span id="batteryText">49%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-header">
+          <div class="back">←</div>
+          <div class="avatar">
+            <img id="previewAvatar" src="https://i.imgur.com/6RpQ9QH.jpg" alt="Avatar" />
+          </div>
+          <div class="header-info">
+            <div class="header-name" id="previewName">Nguyễn Nhật Ánh</div>
+            <div class="header-status">Hoạt động 5 phút trước</div>
+          </div>
+          <div class="header-actions">
+            <button class="mini-btn" aria-label="Call">📞</button>
+            <button class="mini-btn" aria-label="More">⋮</button>
+          </div>
+        </div>
+
+        <div class="chat-body">
+          <div class="message-row them">
+            <div class="bubble" id="theirBubble">Chào bạn nha 😄</div>
+            <div class="time">13:40</div>
+          </div>
+
+          <div class="message-row them">
+            <div class="bubble">Tôi vừa đọc bình luận của bạn, rất hay đó! Tôi muốn mời bạn hợp tác viết truyện cùng tôi có được không?</div>
+            <div class="time">13:41</div>
+          </div>
+
+          <div class="message-row me">
+            <div class="bubble" id="myBubble">Ối! Thật hả anh 😲 Em mơ cũng không dám nghĩ đến việc này!</div>
+            <div class="time">13:42</div>
+          </div>
+
+          <div class="message-row them">
+            <div class="bubble">Thật đó! Gặp nhau nói chuyện một chút được không? Tôi gửi địa chỉ cho bạn nhé</div>
+            <div class="time">13:42</div>
+          </div>
+        </div>
+
+        <div class="composer">
+          <button class="icon-btn" aria-label="emoji">😊</button>
+          <button class="icon-btn" aria-label="attach">📎</button>
+          <input id="composerInput" type="text" value="" placeholder="Nhập tin nhắn..." />
+          <button class="send-btn" aria-label="send">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const els = {
+      avatarUrl: document.getElementById('avatarUrl'),
+      senderName: document.getElementById('senderName'),
+      networkName: document.getElementById('networkName'),
+      networkType: document.getElementById('networkType'),
+      batteryLevel: document.getElementById('batteryLevel'),
+      themeMode: document.getElementById('themeMode'),
+      screenTime: document.getElementById('screenTime'),
+      time1: document.getElementById('time1'),
+      time2: document.getElementById('time2'),
+      time3: document.getElementById('time3'),
+      time4: document.getElementById('time4'),
+      myMessage: document.getElementById('myMessage'),
+      theirMessage: document.getElementById('theirMessage'),
+      previewAvatar: document.getElementById('previewAvatar'),
+      previewName: document.getElementById('previewName'),
+      carrier: document.getElementById('carrier'),
+      networkTypeLabel: document.getElementById('networkTypeLabel'),
+      batteryText: document.getElementById('batteryText'),
+      screenClock: document.getElementById('screenClock'),
+      myBubble: document.getElementById('myBubble'),
+      theirBubble: document.getElementById('theirBubble'),
+      statusBar: document.getElementById('statusBar'),
+      composerInput: document.getElementById('composerInput'),
+      saveTemplate: document.getElementById('saveTemplate'),
+      runPreview: document.getElementById('runPreview')
+    };
+
+    function updatePreview() {
+      els.previewAvatar.src = els.avatarUrl.value.trim() || 'https://i.imgur.com/6RpQ9QH.jpg';
+      els.previewName.textContent = els.senderName.value.trim() || 'Nguyễn Nhật Ánh';
+      els.carrier.textContent = els.networkName.value.trim() || 'Viettel';
+      els.networkTypeLabel.textContent = els.networkType.value.trim() || '4G';
+      els.batteryText.textContent = `${Math.max(0, Math.min(100, Number(els.batteryLevel.value) || 49))}%`;
+      els.screenClock.textContent = els.screenTime.value.trim() || '06:59';
+      els.myBubble.textContent = els.myMessage.value.trim() || 'Ối! Thật hả anh 😲 Em mơ cũng không dám nghĩ đến việc này!';
+      els.theirBubble.textContent = els.theirMessage.value.trim() || 'Chào bạn nha 😄';
+      const currentTheme = els.themeMode.value;
+      if (currentTheme === 'ios') {
+        els.statusBar.style.background = '#f5f5f5';
+        els.statusBar.style.color = '#111827';
+      } else {
+        els.statusBar.style.background = '#0f172a';
+        els.statusBar.style.color = '#fff';
+      }
+    }
+
+    document.getElementById('runPreview').addEventListener('click', updatePreview);
+
+    document.getElementById('saveTemplate').addEventListener('click', () => {
+      const payload = {
+        avatarUrl: els.avatarUrl.value,
+        senderName: els.senderName.value,
+        networkName: els.networkName.value,
+        networkType: els.networkType.value,
+        batteryLevel: els.batteryLevel.value,
+        themeMode: els.themeMode.value,
+        screenTime: els.screenTime.value,
+        time1: els.time1.value,
+        time2: els.time2.value,
+        time3: els.time3.value,
+        time4: els.time4.value,
+        myMessage: els.myMessage.value,
+        theirMessage: els.theirMessage.value
+      };
+      localStorage.setItem('zaloPreviewTemplate', JSON.stringify(payload));
+      alert('Đã lưu mẫu thành công!');
+    });
+
+    const saved = JSON.parse(localStorage.getItem('zaloPreviewTemplate') || '{}');
+    if (saved.avatarUrl) {
+      Object.entries(saved).forEach(([key, value]) => {
+        const target = document.getElementById(key);
+        if (target && value !== undefined && value !== null) target.value = value;
+      });
+    }
+
+    updatePreview();
+  </script>
+</body>
+</html>
